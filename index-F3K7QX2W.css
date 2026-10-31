@@ -16,8 +16,6 @@
   /* board group becomes a flex column that fills leftover viewport height */
   /* board group gets exactly the viewport height left under the header, so board + full tray fit with no scrolling;
      content below (leaderboard, instructions) still scrolls normally */
-  .hidato-root > .group:has(.hidato-board) { height: calc(100vh - 112px); height: calc(100dvh - 112px); min-height: 340px; display: flex; flex-direction: column; }
-  .hidato-root > .group:has(.hidato-board) > .group-heading { display: none; }
   .scorebar { margin-bottom: 6px; flex: 0 0 auto; }
   .score-item { padding: 3px 2px; }
   .score-num { font-size: 16px; }
@@ -43,4 +41,71 @@
   .tray { gap: 3px; }
   .score-num { font-size: 14px; }
   .daily-line { font-size: 12px; }
+}
+
+/* === floating game overlay (2026-10-31 v2): the game screen floats above the main page ===
+   overlay.js tags the live game section (board or name gate) with .ovl-panel
+   and adds the title bar (minimize / close), the reopen pill and the backdrop. */
+
+.ovl-bar { order: -1; flex: 0 0 auto; display: flex; align-items: center; gap: 8px; direction: rtl; }
+.ovl-bar-title { flex: 1; text-align: center; font-size: 15px; font-weight: 700; color: var(--ds-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ovl-btn { flex: 0 0 auto; width: 38px; height: 38px; padding: 0; border-radius: 10px; border: 1px solid var(--ds-hairline); background: #fff; color: var(--ds-ink); font: inherit; font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.ovl-btn:active { background: #efedec; }
+
+.ovl-backdrop { position: fixed; inset: 0; z-index: 890; background: rgba(37,31,33,.38); }
+
+.ovl-pill { position: fixed; z-index: 880; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; font: inherit; font-size: 15px; font-weight: 700; color: #fff; background: #4e7d70; border: none; border-radius: 999px; padding: 13px 22px; box-shadow: 0 8px 22px rgba(37,31,33,.35); cursor: pointer; white-space: nowrap; }
+
+.ovl-panel { position: fixed; inset: 0; z-index: 900; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; background: var(--ds-page); padding: calc(10px + env(safe-area-inset-top, 0px)) 12px calc(10px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior: contain; }
+.ovl-panel > .group-heading { display: none; }
+.ovl-panel .scorebar { flex: 0 0 auto; margin-bottom: 0; }
+.ovl-panel .win-banner { flex: 0 0 auto; margin-bottom: 0; }
+.ovl-panel .hidato-board { flex: 1 1 auto; min-height: 140px; width: 100%; max-width: 100%; position: relative; margin: 0 auto; }
+.ovl-panel .hidato-board svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ovl-panel .tray-wrap { position: static; flex: 0 0 auto; margin-top: 0; }
+.ovl-panel .controls { flex: 0 0 auto; margin-top: 0; justify-content: center; }
+.ovl-panel .daily-done, .ovl-panel .panel-hint { flex: 0 0 auto; margin-top: 0; }
+.ovl-panel:has(.name-gate) { justify-content: center; }
+
+html.ovl-open, html.ovl-open body { overflow: hidden; }
+html.ovl-gone .ovl-panel, html.ovl-gone .ovl-backdrop { display: none; }
+html.ovl-open .ovl-pill { display: none; }
+html.ovl-gone body { padding-bottom: 84px; }
+
+@media (min-width: 561px) {
+  .ovl-panel { inset: max(20px, 4dvh) 24px; margin: 0 auto; max-width: 660px; border: 1px solid var(--ds-hairline); border-radius: 18px; box-shadow: 0 30px 80px rgba(37,31,33,.35); padding: 12px 18px 16px; }
+  .ovl-panel .tray { grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); }
+}
+
+@media (max-width: 560px) {
+  .ovl-panel { gap: 6px; }
+  .ovl-panel .score-item { padding: 4px 2px; }
+  .ovl-panel .score-num { font-size: 18px; }
+  .ovl-panel .score-label { font-size: 11px; }
+  .ovl-panel .tray { grid-template-columns: repeat(8, 1fr); gap: 4px; }
+  .ovl-panel .chip { min-height: 36px; font-size: 15px; }
+  .ovl-panel.big-tray .chip { min-height: 29px; font-size: 13px; }
+  .ovl-panel .tray-wrap { padding: 6px 8px 8px; }
+  .ovl-panel .win-banner { padding: 8px 10px; gap: 4px; }
+  .ovl-panel .win-title { font-size: 16px; }
+  .ovl-panel .win-sub { font-size: 12.5px; }
+  .ovl-panel .controls .fbtn.compact { padding: 8px 12px; font-size: 13.5px; }
+}
+@media (max-width: 560px) and (max-height: 620px) {
+  .ovl-panel .chip { min-height: 32px; font-size: 14px; }
+  .ovl-panel.big-tray .chip { min-height: 26px; font-size: 12px; }
+  .ovl-panel .score-num { font-size: 16px; }
+}
+
+@media (max-width: 560px) and (max-height: 620px) {
+  /* daily win state on short viewports (WhatsApp in-app browser): slim everything so nothing scrolls */
+  .ovl-panel:has(.win-banner) { gap: 4px; }
+  .ovl-panel:has(.win-banner) .chip { min-height: 27px; font-size: 12.5px; }
+  .ovl-panel:has(.win-banner) .win-banner { padding: 5px 8px; gap: 2px; }
+  .ovl-panel:has(.win-banner) .win-title { font-size: 14px; }
+  .ovl-panel:has(.win-banner) .win-sub { font-size: 11.5px; }
+  .ovl-panel:has(.win-banner) .submit-status { font-size: 11px; }
+  .ovl-panel:has(.win-banner) .win-actions .fbtn.compact { padding: 5px 9px; font-size: 12px; }
+  .ovl-panel:has(.win-banner) .score-item { padding: 2px; }
+  .ovl-panel:has(.win-banner) .score-num { font-size: 15px; }
 }
